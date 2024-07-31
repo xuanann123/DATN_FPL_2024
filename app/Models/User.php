@@ -4,13 +4,16 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
+    const TYPE_ADMIN = "admin";
+    const TYPE_MEMBER = "member";
 
     /**
      * The attributes that are mass assignable.
@@ -21,6 +24,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'type'
     ];
 
     /**
@@ -42,4 +46,24 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+    function isAdmin() {
+        return $this->type == self::TYPE_ADMIN;
+    }
+    function isMember()
+    {
+        return $this->type == self::TYPE_MEMBER;
+    }
+    //Một user có 1 profile
+    function profile() {
+        return $this->hasOne(Profile::class);
+    }
+    //Một user có 1 wallet
+    function wallet()
+    {
+        return $this->hasOne(Wallet::class);
+    }
+    //Một user có nhiều vai trò 
+    function roles() {
+        return $this->belongsToMany(Role::class, "user_roles");
+    }
 }
